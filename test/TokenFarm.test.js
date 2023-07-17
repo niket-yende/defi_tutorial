@@ -67,7 +67,7 @@ contract('TokenFarm', ([owner, investor]) => {
             result = await daiToken.balanceOf(investor);
             assert.equal(result.toString(), tokens('0'), 'Investor mock Dai wallet balance must be correct after staking');
 
-            // Check initial balance before staking
+            // Check balance after staking
             result = await daiToken.balanceOf(tokenFarm.address);
             assert.equal(result.toString(), tokens('100'), 'Token Farm mock Dai wallet balance must be correct after staking');
 
@@ -82,6 +82,22 @@ contract('TokenFarm', ([owner, investor]) => {
 
             // Ensure only owner can issue tokens
             await tokenFarm.issueTokens({ from: investor }).should.be.rejected;
+
+            // Unstake tokens
+            await tokenFarm.unstakeTokens({ from: investor });
+
+            // Check balance after unstaking
+            result = await daiToken.balanceOf(investor);
+            assert.equal(result.toString(), tokens('100'), 'Investor mock Dai wallet balance must be correct after unstaking');
+
+            result = await daiToken.balanceOf(tokenFarm.address);
+            assert.equal(result.toString(), tokens('0'), 'Token Farm mock Dai wallet balance must be correct after unstaking');
+
+            result = await tokenFarm.stakingBalance(investor);
+            assert.equal(result.toString(), tokens('0'), 'Investor staking balance must be correct after unstaking');
+
+            result = await tokenFarm.isStaking(investor);
+            assert.equal(result.toString(), 'false', 'Investor staking status correct after unstaking');
         });
     }); 
 });
